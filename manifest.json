@@ -1,0 +1,17 @@
+{
+    "name": "Question du Jour - TEST",
+    "short_name": "QuestionTest",
+    "description": "Application de test questionnaire - 1 minute par question",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#667eea",
+    "theme_color": "#667eea",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xXzEpIi8+CjxwYXRoIGQ9Ik05NiA0OEM4MS4yIDQ4IDY5LjMzMzMgNTkuODY2NyA2OS4zMzMzIDc0LjY2NjdWMTE3LjMzM0M2OS4zMzMzIDEzMi4xMzMgODEuMiAxNDQgOTYgMTQ0UzEyMi42NjcgMTMyLjEzMyAxMjIuNjY3IDExNy4zMzNWNzQuNjY2N0MxMjIuNjY3IDU5Ljg2NjcgMTEwLjggNDggOTYgNDhaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNOTYgNjRDODkuNiA2NCA4NC40NDQ0IDY5LjE1NTYgODQuNDQ0NCA3NS41NTU2Vjg4SDEwNy41NTZWNzUuNTU1NkMxMDcuNTU2IDY5LjE1NTYgMTAyLjQgNjQgOTYgNjRaIiBmaWxsPSIjNjY3ZWVhIi8+CjxwYXRoIGQ9Ik04NCA5NkgxMDhWMTI4SDg0Vjk2WiIgZmlsbD0iIzc2NGJhMiIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzFfMSIgeDE9IjAiIHkxPSIwIiB4Mj0iMTkyIiB5Mj0iMTkyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiM2NjdlZWEiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNzY0YmEyIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHN2Zz4K",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        }
+    ]
+}

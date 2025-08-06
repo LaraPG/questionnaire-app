@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Questionnaire</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Questionnaire">
+    <meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📊 Daily Questionnaire</h1>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="day-counter" id="day-counter">Question 1/15</div>
+        </header>
+
+        <!-- Main Question Area -->
+        <main class="question-area">
+            <div class="question-card">
+                <h2 class="question-text" id="question-text">Loading question...</h2>
+                
+                <div class="options">
+                    <button class="option-btn" id="option1" onclick="submitAnswer(1)">
+                        <span class="option-text" id="option1-text">Option 1</span>
+                    </button>
+                    <button class="option-btn" id="option2" onclick="submitAnswer(2)">
+                        <span class="option-text" id="option2-text">Option 2</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Stats Panel -->
+        <aside class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-label">Time Remaining</div>
+                <div class="stat-value countdown" id="countdown">01:00</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Current Votes</div>
+                <div class="stat-value" id="today-count">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Current Split</div>
+                <div class="stat-value" id="proportion-value">0% / 0%</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Total Questions</div>
+                <div class="stat-value" id="total-count">0</div>
+            </div>
+        </aside>
+
+        <!-- Admin Panel -->
+        <div class="admin-panel">
+            <h3>🔧 Admin Controls</h3>
+            <button onclick="stopTest()" class="admin-btn" style="background: #10b981;">✅ Finish Now</button>
+            <button onclick="fillCurrentForm()" class="admin-btn">📋 Next Question</button>
+            <button onclick="downloadCSV()" class="admin-btn">📥 Download CSV</button>
+            <button onclick="testVoting()" class="admin-btn" style="background: #2196F3;">🧪 Test Auto</button>
+            <button onclick="resetData()" class="admin-btn" style="background: #ff9800;">🔄 Reset All</button>
+            <button onclick="showAddQuestionModal()" class="admin-btn" style="background: #9C27B0;">➕ Add Question</button>
+            <button onclick="showAllQuestions()" class="admin-btn" style="background: #2196F3;">📋 View All Questions</button>
+        </div>
+
+        <!-- Email Button -->
+        <div class="email-section" style="margin-top: 30px; text-align: center; padding: 20px; background: #f8f9fa; border-radius: 15px;">
+            <button onclick="showDaySelector()" style="
+                background: linear-gradient(135deg, #4CAF50, #45a049);
+                color: white;
+                border: none;
+                border-radius: 15px;
+                padding: 20px 40px;
+                font-size: 20px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 6px 25px rgba(76, 175, 80, 0.4);
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                margin: 0 auto;
+                min-width: 300px;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                📧 SEND CSV EMAIL
+            </button>
+            <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                Choose which day to send • Excel-ready format
+            </p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
