@@ -66,12 +66,13 @@
         <div class="admin-panel">
             <h3>🔧 Admin Controls</h3>
             <button onclick="stopTest()" class="admin-btn" style="background: #10b981;">✅ Finish Now</button>
-            <button onclick="fillCurrentForm()" class="admin-btn">📋 Next Question</button>
+            <button onclick="goToNextQuestion()" class="admin-btn">📋 Next Question</button>
             <button onclick="downloadCSV()" class="admin-btn">📥 Download CSV</button>
             <button onclick="testVoting()" class="admin-btn" style="background: #2196F3;">🧪 Test Auto</button>
             <button onclick="resetData()" class="admin-btn" style="background: #ff9800;">🔄 Reset All</button>
-            <button onclick="showAddQuestionModal()" class="admin-btn" style="background: #9C27B0;">➕ Add Question</button>
             <button onclick="showAllQuestions()" class="admin-btn" style="background: #2196F3;">📋 View All Questions</button>
+            <button onclick="addNewQuestion()" class="admin-btn" style="background: #4CAF50;">➕ Add Question</button>
+<button onclick="viewCustomQuestions()" class="admin-btn" style="background: #2196F3;">📝 View Custom</button>
         </div>
 
         <!-- Email Button -->
@@ -105,3 +106,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
