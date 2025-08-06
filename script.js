@@ -1192,35 +1192,75 @@ function testVoting() {
     setTimeout(() => submitAnswer(1), 2500);
 }
 
+// Reset complet avec retour à la question 1
 function resetData() {
-    console.log('🔧 Admin: resetData called');
-    if (confirm('⚠️ Supprimer toutes les données et recommencer ?')) {
-        // Autoriser temporairement pour la suppression
-        SAVE_AUTHORIZED = true;
-        
-        // Supprimer toutes les données
-        const allKeys = Object.keys(localStorage);
-        allKeys.forEach(key => {
-            if (key.startsWith('question_data_') || key === 'all_days_csv_data') {
-                                localStorage.removeItem(key);
-            }
-        });
-        
-        SAVE_AUTHORIZED = false;
-        
-        // Réinitialiser les variables
-        currentQuestionIndex = 0;
-        currentMinute = 1;
-        option1Count = 0;
-        option2Count = 0;
-        totalResponses = 0;
-        isSaving = false;
-        
-        // Re-synchroniser
-        syncWithRealTime();
-        
-        showNotification('🔄 Données supprimées ! Redémarrage...', 'warning');
+    console.log('🔄 Complete reset initiated');
+    
+    // Confirmation
+    if (!confirm('⚠️ RESET COMPLET !\n\n• Toutes les données seront supprimées\n• Retour à la question 1\n• Timer redémarré\n\nContinuer ?')) {
+        return;
     }
+    
+    // 1. Vider le localStorage
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('question_data_') || key === 'all_days_csv_data')) {
+            keysToRemove.push(key);
+        }
+    }
+    
+    keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('🗑️ Removed:', key);
+    });
+    
+    // 2. Reset toutes les variables
+    currentQuestionIndex = 0;
+    option1Count = 0;
+    option2Count = 0;
+    totalResponses = 0;
+    isQuestionActive = true;
+    timeRemaining = QUESTION_DURATION_MINUTES * 60; // Temps complet
+    
+    // 3. Charger la première question
+    if (QUESTIONS_LIST && QUESTIONS_LIST.length > 0) {
+        const questionData = QUESTIONS_LIST[0];
+        option1 = questionData.option1;
+        option2 = questionData.option2;
+        currentQuestion = `Do you prefer ${option1} or ${option2}?`;
+        
+        console.log('✅ Loaded question 1:', currentQuestion);
+    }
+    
+    // 4. Arrêter tous les timers
+    stopTimers();
+    
+    // 5. Redémarrer le timer avec le temps complet
+    startRealTimeCountdown();
+    
+    // 6. Mettre à jour l'affichage
+    updateDisplay();
+    updateProgress();
+    updateStats();
+    
+    // 7. Notification de succès
+    showNotification(`🔄 RESET COMPLET EFFECTUÉ !
+
+✅ Toutes les données supprimées
+🎯 Question 1 rechargée
+⏰ Timer redémarré (${Math.floor(timeRemaining / 60)}:${(timeRemaining % 60).toString().padStart(2, '0')})
+🔄 Prêt pour de nouvelles réponses !
+
+Question: ${currentQuestion}`, 'success');
+    
+    console.log('✅ Complete reset finished');
+    console.log('Current state:', {
+        questionIndex: currentQuestionIndex,
+        question: currentQuestion,
+        timeRemaining: timeRemaining,
+        isActive: isQuestionActive
+    });
 }
 
 function downloadCSV() {
