@@ -1153,6 +1153,90 @@ function fillCurrentForm() {
     syncWithRealTime();
 }
 
+// Fonction corrigée pour passer à la question suivante
+function goToNextQuestion() {
+    console.log('➡️ Going to next question manually');
+    console.log('Current index before:', currentQuestionIndex);
+    console.log('Total questions:', QUESTIONS_LIST.length);
+    
+    // Sauvegarder les données actuelles si il y a des votes
+    if (totalResponses > 0) {
+        console.log('💾 Saving current question data...');
+        saveCurrentQuestionData();
+    }
+    
+    // Calculer le prochain index correctement
+    const nextIndex = (currentQuestionIndex + 1) % QUESTIONS_LIST.length;
+    console.log('Next index calculated:', nextIndex);
+    
+    // Mettre à jour l'index AVANT de charger
+    currentQuestionIndex = nextIndex;
+    
+    // Vérifier que l'index est valide
+    if (currentQuestionIndex >= QUESTIONS_LIST.length) {
+        console.log('⚠️ Index out of bounds, resetting to 0');
+        currentQuestionIndex = 0;
+    }
+    
+    // Charger la nouvelle question
+    console.log('📥 Loading question at index:', currentQuestionIndex);
+    
+    if (QUESTIONS_LIST[currentQuestionIndex]) {
+        const questionData = QUESTIONS_LIST[currentQuestionIndex];
+        option1 = questionData.option1;
+        option2 = questionData.option2;
+        currentQuestion = `Do you prefer ${option1} or ${option2}?`;
+        
+        console.log('✅ Question loaded:', currentQuestion);
+    } else {
+        console.error('❌ No question found at index:', currentQuestionIndex);
+        // Fallback à la première question
+        currentQuestionIndex = 0;
+        const questionData = QUESTIONS_LIST[0];
+        option1 = questionData.option1;
+        option2 = questionData.option2;
+        currentQuestion = `Do you prefer ${option1} or ${option2}?`;
+    }
+    
+    // Reset votes pour la nouvelle question
+    option1Count = 0;
+    option2Count = 0;
+    totalResponses = 0;
+    
+    // Reset timer complet
+    isQuestionActive = true;
+    timeRemaining = QUESTION_DURATION_MINUTES * 60;
+    
+    // Activer le mode manuel pour éviter les conflits
+    manualMode = true;
+    
+    // Redémarrer le timer
+    stopTimers();
+    startRealTimeCountdown();
+    
+    // Mettre à jour l'affichage
+    updateDisplay();
+    updateProgress();
+    updateStats();
+    
+    // Notification de succès
+    showNotification(`➡️ QUESTION SUIVANTE !
+
+🎯 Question ${currentQuestionIndex + 1}/${QUESTIONS_LIST.length}
+${currentQuestion}
+
+⏰ ${Math.floor(timeRemaining / 60)} minutes
+🎮 Mode manuel activé`, 'success');
+    
+    console.log('✅ Next question completed');
+    console.log('Final state:', {
+        index: currentQuestionIndex,
+        question: currentQuestion,
+        totalQuestions: QUESTIONS_LIST.length,
+        manualMode: manualMode
+    });
+}
+
 function stopTest() {
     console.log('🔧 Admin: stopTest called');
     if (confirm('🛑 Passer à la question suivante ?')) {
@@ -1262,6 +1346,254 @@ Question: ${currentQuestion}`, 'success');
         isActive: isQuestionActive
     });
 }
+
+
+// Clé pour sauvegarder les questions personnalisées
+const CUSTOM_QUESTIONS_KEY = 'custom_questions_list';
+
+// Charger les questions sauvegardées au démarrage
+function loadCustomQuestions() {
+    try {
+        const savedQuestions = localStorage.getItem(CUSTOM_QUESTIONS_KEY);
+        if (savedQuestions) {
+            const customQuestions = JSON.parse(savedQuestions);
+            console.log('📥 Loading custom questions:', customQuestions.length);
+            
+            // Fusionner avec les questions par défaut
+            QUESTIONS_LIST = [...QUESTIONS_LIST, ...customQuestions];
+            
+            console.log('✅ Total questions loaded:', QUESTIONS_LIST.length);
+            return customQuestions.length;
+        }
+    } catch (error) {
+        console.error('❌ Error loading custom questions:', error);
+    }
+    return 0;
+}
+
+// Sauvegarder une nouvelle question
+function saveCustomQuestion(option1, option2) {
+    try {
+        // Récupérer les questions existantes
+        const savedQuestions = localStorage.getItem(CUSTOM_QUESTIONS_KEY);
+        let customQuestions = savedQuestions ? JSON.parse(savedQuestions) : [];
+        
+        // Créer la nouvelle question
+        const newQuestion = {
+            option1: option1.trim(),
+            option2: option2.trim(),
+            dateAdded: new Date().toISOString(),
+            id: Date.now() // ID unique
+        };
+        
+        // Vérifier si elle existe déjà
+        const exists = customQuestions.some(q => 
+            q.option1.toLowerCase() === option1.toLowerCase() && 
+            q.option2.toLowerCase() === option2.toLowerCase()
+        );
+        
+        if (exists) {
+            console.log('⚠️ Question already exists');
+            return false;
+        }
+        
+        // Ajouter la nouvelle question
+        customQuestions.push(newQuestion);
+        
+        // Sauvegarder dans localStorage
+        localStorage.setItem(CUSTOM_QUESTIONS_KEY, JSON.stringify(customQuestions));
+        
+        // Ajouter à la liste active
+        QUESTIONS_LIST.push(newQuestion);
+        
+        console.log('💾 Custom question saved:', newQuestion);
+        console.log('📊 Total questions now:', QUESTIONS_LIST.length);
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error saving custom question:', error);
+        return false;
+    }
+}
+
+// Supprimer une question personnalisée
+function deleteCustomQuestion(questionId) {
+    try {
+        const savedQuestions = localStorage.getItem(CUSTOM_QUESTIONS_KEY);
+        if (!savedQuestions) return false;
+        
+        let customQuestions = JSON.parse(savedQuestions);
+        const originalLength = customQuestions.length;
+        
+        // Filtrer pour supprimer la question
+        customQuestions = customQuestions.filter(q => q.id !== questionId);
+        
+        if (customQuestions.length < originalLength) {
+            // Sauvegarder la liste mise à jour
+            localStorage.setItem(CUSTOM_QUESTIONS_KEY, JSON.stringify(customQuestions));
+            
+            // Recharger toutes les questions
+            reloadAllQuestions();
+            
+            console.log('🗑️ Custom question deleted');
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('❌ Error deleting custom question:', error);
+        return false;
+    }
+}
+
+// Recharger toutes les questions (défaut + personnalisées)
+function reloadAllQuestions() {
+    // Reset à la liste par défaut
+    QUESTIONS_LIST = [
+        { option1: "Coffee", option2: "Tea" },
+        { option1: "Summer", option2: "Winter" },
+        { option1: "Movies", option2: "Books" },
+        { option1: "Beach", option2: "Mountains" },
+        { option1: "Pizza", option2: "Burger" }
+    ];
+    
+    // Recharger les questions personnalisées
+    loadCustomQuestions();
+}
+
+// Modifier la fonction addNewQuestion existante
+// Version simple garantie
+function addNewQuestion() {
+    console.log('🎯 Adding new question...');
+    
+    const option1 = prompt("🎯 Option 1:");
+    if (!option1 || option1.trim() === '') {
+        console.log('❌ No option1 provided');
+        return;
+    }
+    
+    const option2 = prompt("🎯 Option 2:");
+    if (!option2 || option2.trim() === '') {
+        console.log('❌ No option2 provided');
+        return;
+    }
+    
+    console.log('💾 Saving question:', option1, 'vs', option2);
+    
+    try {
+        // Récupérer les questions existantes
+        let savedQuestions = localStorage.getItem('my_custom_questions');
+        let questionsList = savedQuestions ? JSON.parse(savedQuestions) : [];
+        
+        console.log('📥 Existing questions:', questionsList.length);
+        
+        // Ajouter la nouvelle question
+        const newQuestion = {
+            option1: option1.trim(),
+            option2: option2.trim(),
+            dateAdded: new Date().toISOString()
+        };
+        
+        questionsList.push(newQuestion);
+        
+        // Sauvegarder
+        localStorage.setItem('my_custom_questions', JSON.stringify(questionsList));
+        
+        // Ajouter à la liste active
+        QUESTIONS_LIST.push(newQuestion);
+        
+        console.log('✅ Question saved! Total questions:', QUESTIONS_LIST.length);
+        console.log('💾 LocalStorage content:', localStorage.getItem('my_custom_questions'));
+        
+        alert(`✅ QUESTION AJOUTÉE !
+
+"${option1}" vs "${option2}"
+
+Total questions: ${QUESTIONS_LIST.length}
+Sauvée dans localStorage !`);
+        
+    } catch (error) {
+        console.error('❌ Error saving question:', error);
+        alert('❌ Erreur: ' + error.message);
+    }
+}
+
+// Charger les questions au démarrage
+function loadMyCustomQuestions() {
+    console.log('📥 Loading custom questions...');
+    
+    try {
+        const saved = localStorage.getItem('my_custom_questions');
+        if (saved) {
+            const customQuestions = JSON.parse(saved);
+            console.log('📥 Found custom questions:', customQuestions.length);
+            
+            // Ajouter à la liste
+            customQuestions.forEach(q => {
+                QUESTIONS_LIST.push(q);
+            });
+            
+            console.log('✅ Total questions loaded:', QUESTIONS_LIST.length);
+            return customQuestions.length;
+        }
+    } catch (error) {
+        console.error('❌ Error loading questions:', error);
+    }
+    
+    return 0;
+}
+
+// Auto-charger au démarrage
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const loaded = loadMyCustomQuestions();
+        if (loaded > 0) {
+            console.log(`✅ Loaded ${loaded} custom questions`);
+        }
+    }, 1000);
+});
+// Fonction pour voir toutes les questions personnalisées
+function viewCustomQuestions() {
+    try {
+        const savedQuestions = localStorage.getItem(CUSTOM_QUESTIONS_KEY);
+        if (!savedQuestions) {
+            showNotification('📝 AUCUNE QUESTION PERSONNALISÉE\n\nUtilisez "Add Question" pour en ajouter !', 'info');
+            return;
+        }
+        
+        const customQuestions = JSON.parse(savedQuestions);
+        
+        let message = `📝 QUESTIONS PERSONNALISÉES (${customQuestions.length})\n\n`;
+        
+        customQuestions.forEach((q, index) => {
+            const date = new Date(q.dateAdded).toLocaleDateString();
+            message += `${index + 1}. "${q.option1}" vs "${q.option2}"\n   📅 Ajoutée le ${date}\n\n`;
+        });
+        
+        message += `💾 Total questions: ${QUESTIONS_LIST.length}\n🔄 Ces questions restent après reload !`;
+        
+        showNotification(message, 'info');
+        
+    } catch (error) {
+        console.error('❌ Error viewing custom questions:', error);
+        showNotification('❌ Erreur lors de la lecture des questions', 'error');
+    }
+}
+
+// Initialiser au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Loading custom questions...');
+    const customCount = loadCustomQuestions();
+    
+    if (customCount > 0) {
+        console.log(`✅ Loaded ${customCount} custom questions`);
+        showNotification(`📥 ${customCount} questions personnalisées chargées !
+
+📊 Total: ${QUESTIONS_LIST.length} questions
+💾 Vos questions sont sauvegardées !`, 'success');
+    }
+});
+
 
 function downloadCSV() {
     console.log('🔧 Admin: downloadCSV called');
