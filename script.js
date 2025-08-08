@@ -36,7 +36,7 @@ localStorage.setItem = function(key, value) {
 };
 
 // CONFIGURATION POUR TESTS ET PRODUCTION
-let QUESTION_DURATION_MINUTES = 1; // 1 minute pour tests
+let QUESTION_DURATION_MINUTES = 1440; // 1 minute pour tests
 let DAILY_START_HOUR = 0; // Actif 24h/24 pour tests
 let DAILY_END_HOUR = 24;
 
@@ -76,211 +76,98 @@ let isSaving = false;
 
 // Fonction pour calculer quelle question devrait être active
 
-// Version ultra-simple qui marche toujours
 function calculateCurrentQuestion() {
     const now = new Date();
     
-    // Calculer depuis minuit
-    const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes();
+    // CALCULER LE JOUR depuis une date de référence
+    const startDate = new Date('2025-07-22'); // Date de démarrage du questionnaire
+    const daysDifference = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
     
-    // Index de la question (boucle infinie)
-    const questionIndex = Math.floor(minutesSinceMidnight / QUESTION_DURATION_MINUTES) % QUESTIONS_LIST.length;
+    // Index basé sur le jour
+    const questionIndex = daysDifference % QUESTIONS_LIST.length;
     
-    // Temps restant dans cette minute
-    const secondsInCurrentMinute = now.getSeconds();
-    const timeRemaining = (QUESTION_DURATION_MINUTES * 60) - (secondsInCurrentMinute + (minutesSinceMidnight % QUESTION_DURATION_MINUTES) * 60);
+    // Temps restant dans cette journée
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+    const timeRemaining = Math.floor((endOfDay - now) / 1000);
+    
+    console.log('📅 CALCUL QUOTIDIEN:', {
+        'Date actuelle': now.toLocaleDateString(),
+        'Jours depuis début': daysDifference,
+        'Questions totales': QUESTIONS_LIST.length,
+        'Question index': questionIndex,
+        'Question numéro': questionIndex + 1,
+        'Temps restant': Math.floor(timeRemaining / 3600) + 'h ' + Math.floor((timeRemaining % 3600) / 60) + 'm'
+    });
     
     return {
         questionIndex: questionIndex,
         isActive: true,
-        timeRemaining: Math.max(1, timeRemaining), // Minimum 1 seconde
-        message: `Question ${questionIndex + 1}/${QUESTIONS_LIST.length} (Always Active)`
+        timeRemaining: Math.max(1, timeRemaining),
+        message: `Question ${questionIndex + 1}/${QUESTIONS_LIST.length} (Jour ${daysDifference + 1})`
     };
 }
 
 
 // Fonction pour afficher le sélecteur de jour
 function showDaySelector() {
-    console.log('📅 showDaySelector called');
+    console.log('📧 Sending today CSV directly');
     
-    const existingModal = document.getElementById('day-selector-modal');
-    if (existingModal) {
-        existingModal.remove();
-    }
+    // VOTRE EMAIL ICI
+    const MY_EMAIL = "gueulette.l@pg.com";
     
-    // Récupérer tous les jours avec des données
-    const allKeys = Object.keys(localStorage).filter(key => key.startsWith('question_data_'));
-    const csvData = localStorage.getItem('all_days_csv_data');
+    // Récupérer les données d'aujourd'hui
+    const csvData = localStorage.getItem('all_days_csv_data') || '';
     
-    if (allKeys.length === 0 && (!csvData || csvData.trim() === '')) {
-        showNotification('❌ Aucune donnée trouvée !', 'error');
+    if (!csvData || csvData.trim() === '') {
+        showNotification('❌ Aucune donnée à envoyer !', 'error');
         return;
     }
     
-    const modal = document.createElement('div');
-    modal.id = 'day-selector-modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        z-index: 10001;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        animation: fadeIn 0.3s ease-out;
-    `;
+    const today = new Date().toLocaleDateString('fr-FR');
+    const lines = csvData.split('\n').filter(line => line.trim() && !line.startsWith('Question'));
     
-    const container = document.createElement('div');
-    container.style.cssText = `
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        color: white;
-        font-family: Arial, sans-serif;
-        max-width: 500px;
-        width: 90%;
-        text-align: center;
-        max-height: 80vh;
-        overflow-y: auto;
-    `;
+    const subject = `📊 Questionnaire Data - ${today}`;
+    const body = `📊 DONNÉES QUESTIONNAIRE
+
+Bonjour,
+
+Voici les données du questionnaire d'aujourd'hui.
+
+📈 Résumé: ${lines.length} réponses le ${today}
+📅 Export généré le: ${new Date().toLocaleString('fr-FR')}
+
+Les données sont au format CSV ci-dessous :
+
+--- DONNÉES CSV ---
+${csvData}
+--- FIN DES DONNÉES ---
+
+Cordialement,
+📱 Système de Questionnaire`;
     
-    let dayOptions = '';
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    const mailtoLink = `mailto:${MY_EMAIL}?subject=${encodedSubject}&body=${encodedBody}`;
     
-    // Option pour aujourd'hui (données CSV)
-    if (csvData && csvData.trim() !== '') {
-        const today = new Date().toISOString().split('T')[0];
-        const todayFormatted = new Date().toLocaleDateString('fr-FR');
-        const lines = csvData.split('\n').filter(line => line.trim() && !line.startsWith('Question'));
-        
-        dayOptions += `
-            <div class="day-option" onclick="sendDayEmail('today')" style="
-                background: rgba(255,255,255,0.2);
-                margin: 10px 0;
-                padding: 20px;
-                border-radius: 15px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                border: 2px solid transparent;
-            " onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.borderColor='white';" 
-               onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.borderColor='transparent';">
-                <div style="font-size: 20px; font-weight: bold; margin-bottom: 5px;">
-                    📅 Aujourd'hui
-                </div>
-                <div style="font-size: 16px; opacity: 0.9;">
-                    ${todayFormatted} • ${lines.length} réponses
-                </div>
-                <div style="font-size: 14px; opacity: 0.7; margin-top: 5px;">
-                    Format CSV complet
-                </div>
-            </div>
-        `;
+    try {
+        window.location.href = mailtoLink;
+        showNotification(`📧 EMAIL PRÉPARÉ !
+
+📮 À: ${MY_EMAIL}
+📊 ${lines.length} réponses d'aujourd'hui
+✉️ Appuyez "Envoyer" dans Mail !`, 'success');
+    } catch (error) {
+        showNotification('❌ Erreur email', 'error');
     }
-    
-    // Options pour les autres jours
-    allKeys.sort().reverse().forEach(key => {
-        const date = key.replace('question_data_', '');
-        const dayData = JSON.parse(localStorage.getItem(key));
-        const questionCount = Object.keys(dayData).length;
-        const dateFormatted = new Date(date).toLocaleDateString('fr-FR');
-        
-        // Calculer le total des réponses
-        let totalResponses = 0;
-        Object.values(dayData).forEach(q => {
-            totalResponses += q.totalResponses || 0;
-        });
-        
-        dayOptions += `
-            <div class="day-option" onclick="sendDayEmail('${date}')" style="
-                background: rgba(255,255,255,0.15);
-                margin: 10px 0;
-                padding: 20px;
-                border-radius: 15px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                border: 2px solid transparent;
-            " onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.borderColor='white';" 
-               onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.borderColor='transparent';">
-                <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">
-                    📊 ${dateFormatted}
-                </div>
-                <div style="font-size: 14px; opacity: 0.9;">
-                    ${questionCount} questions • ${totalResponses} réponses
-                </div>
-                <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
-                    Format JSON détaillé
-                </div>
-            </div>
-        `;
-    });
-    
-    // Option pour tout exporter
-    dayOptions += `
-        <div class="day-option" onclick="sendDayEmail('all')" style="
-            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
-            margin: 15px 0;
-            padding: 25px;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        " onmouseover="this.style.transform='scale(1.02)'; this.style.borderColor='white';" 
-           onmouseout="this.style.transform='scale(1)'; this.style.borderColor='transparent';">
-            <div style="font-size: 20px; font-weight: bold; margin-bottom: 5px;">
-                🗂️ TOUS LES JOURS
-            </div>
-            <div style="font-size: 16px; opacity: 0.9;">
-                Export complet • ${allKeys.length} jours
-            </div>
-            <div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">
-                Fichier CSV consolidé
-            </div>
-        </div>
-    `;
-    
-    container.innerHTML = `
-        <div style="margin-bottom: 30px;">
-            <h2 style="margin: 0 0 10px 0; font-size: 28px;">📧 Send CSV Email</h2>
-            <p style="margin: 0; opacity: 0.9; font-size: 16px;">
-                Choose which day's data to send
-            </p>
-        </div>
-        
-        <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
-            ${dayOptions}
-        </div>
-        
-        <button onclick="this.parentElement.parentElement.remove()" style="
-            background: #f44336;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        " onmouseover="this.style.background='#d32f2f'" onmouseout="this.style.background='#f44336'">
-            ✕ Cancel
-        </button>
-    `;
-    
-    modal.appendChild(container);
-    document.body.appendChild(modal);
-    
-    // Fermer en cliquant à côté
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
 }
 
 // Fonction pour envoyer l'email d'un jour spécifique
 function sendDayEmail(dayType) {
     console.log('📧 sendDayEmail called for:', dayType);
+    
+    // VOTRE EMAIL ICI - CHANGEZ CETTE LIGNE !
+    const MY_EMAIL = "gueulette.l@pg.com"; // ← METTEZ VOTRE VRAIE ADRESSE
     
     let csvData = '';
     let subject = '';
@@ -290,7 +177,7 @@ function sendDayEmail(dayType) {
         // Données CSV d'aujourd'hui
         csvData = localStorage.getItem('all_days_csv_data') || '';
         const today = new Date().toLocaleDateString('fr-FR');
-        subject = `Questionnaire Data - ${today}`;
+        subject = `📊 Questionnaire Data - ${today}`;
         
         const lines = csvData.split('\n').filter(line => line.trim() && !line.startsWith('Question'));
         dayInfo = `${lines.length} réponses aujourd'hui`;
@@ -298,7 +185,7 @@ function sendDayEmail(dayType) {
     } else if (dayType === 'all') {
         // Toutes les données
         csvData = generateAllDaysCSV();
-        subject = 'Questionnaire Data - All Days';
+        subject = '📊 Questionnaire Data - All Days';
         
         const allKeys = Object.keys(localStorage).filter(key => key.startsWith('question_data_'));
         dayInfo = `${allKeys.length} jours de données`;
@@ -308,7 +195,7 @@ function sendDayEmail(dayType) {
         const dayData = JSON.parse(localStorage.getItem(`question_data_${dayType}`) || '{}');
         csvData = generateDayCSV(dayType, dayData);
         const dateFormatted = new Date(dayType).toLocaleDateString('fr-FR');
-        subject = `Questionnaire Data - ${dateFormatted}`;
+        subject = `📊 Questionnaire Data - ${dateFormatted}`;
         
         const questionCount = Object.keys(dayData).length;
         dayInfo = `${questionCount} questions le ${dateFormatted}`;
@@ -323,51 +210,63 @@ function sendDayEmail(dayType) {
     const modal = document.getElementById('day-selector-modal');
     if (modal) modal.remove();
     
-    // Préparer l'email
-    const body = `Bonjour,
+    // Corps de l'email amélioré
+    const body = `📊 DONNÉES QUESTIONNAIRE
 
-Voici les données du questionnaire.
+Bonjour,
 
-📊 Résumé: ${dayInfo}
-📅 Date d'export: ${new Date().toLocaleString()}
+Voici les données du questionnaire demandées.
+
+📈 Résumé: ${dayInfo}
+📅 Export généré le: ${new Date().toLocaleString('fr-FR')}
+🎯 Type de données: ${dayType === 'today' ? 'Aujourd\'hui' : dayType === 'all' ? 'Tous les jours' : 'Jour spécifique'}
 
 Les données sont incluses ci-dessous au format CSV.
+Vous pouvez les copier dans Excel ou Google Sheets.
 
 Cordialement,
-Système de Questionnaire
+📱 Système de Questionnaire
 
---- CSV DATA ---
-`;
+--- DONNÉES CSV ---
+${csvData}
+
+--- FIN DES DONNÉES ---
+
+🔧 Généré automatiquement depuis l'app Questionnaire
+📱 Envoyé depuis iPhone/Safari`;
     
     const encodedSubject = encodeURIComponent(subject);
-    const encodedBody = encodeURIComponent(body + csvData);
+    const encodedBody = encodeURIComponent(body);
     
-    // Créer le lien mailto
-    const mailtoLink = `mailto:?subject=${encodedSubject}&body=${encodedBody}`;
+    // Créer le lien mailto AVEC VOTRE EMAIL PRÉ-REMPLI
+    const mailtoLink = `mailto:${MY_EMAIL}?subject=${encodedSubject}&body=${encodedBody}`;
+    
+    console.log('📧 Preparing email to:', MY_EMAIL);
+    console.log('📊 Data type:', dayType);
+    console.log('📈 Info:', dayInfo);
     
     try {
         window.location.href = mailtoLink;
-        showNotification(`📧 Email préparé !
+        
+        showNotification(`📧 EMAIL PRÉPARÉ !
 
-${dayInfo}
-✅ Votre client email va s'ouvrir`, 'success');
+📮 Destinataire: ${MY_EMAIL}
+📊 Contenu: ${dayInfo}
+📅 ${subject}
+
+✉️ Votre app Mail va s'ouvrir
+Il suffit d'appuyer "Envoyer" !`, 'success');
+        
     } catch (error) {
         console.error('❌ Email error:', error);
-        showNotification('❌ Erreur lors de l\'ouverture de l\'email', 'error');
+        showNotification(`❌ Erreur email
+
+Impossible d'ouvrir le client email.
+Vérifiez que Mail est configuré.
+
+📧 Email cible: ${MY_EMAIL}`, 'error');
     }
 }
-
-// Fonction pour générer le CSV d'un jour spécifique
-function generateDayCSV(date, dayData) {
-    let csv = 'Date,Question,Option1,Option2,Proportion,Total_Responses,Option1_Count,Option2_Count,Question_Number\n';
-    
-    Object.values(dayData).forEach(questionData => {
-        csv += `"${date}","${questionData.question}","${questionData.option1}","${questionData.option2}","${questionData.proportion.toFixed(3)}","${questionData.totalResponses}","${questionData.option1Count}","${questionData.option2Count}","${questionData.questionNumber}"\n`;
-    });
-    
-    return csv;
-}
-
 // Fonction pour générer le CSV de tous les jours
 function generateAllDaysCSV() {
     let csv = 'Date,Question,Option1,Option2,Proportion,Total_Responses,Option1_Count,Option2_Count,Question_Number\n';
@@ -479,6 +378,11 @@ function loadTodayData() {
 
 // Fonction principale de synchronisation
 function syncWithRealTime() {
+    // Si on ajoute une question, ne pas synchroniser
+    if (addingQuestion) {
+        console.log('⏸️ Sync paused - adding question');
+        return;
+    }
     const currentState = calculateCurrentQuestion();
     
     console.log('🕐 Sync with real time:', currentState);
@@ -614,22 +518,28 @@ function stopTimers() {
 
 // Fonction de vote modifiée
 function submitAnswer(optionNumber) {
-    console.log(`👆 submitAnswer called: option ${optionNumber}`);
+    console.log(`👆 Vote pour option ${optionNumber}`);
     
     if (!isQuestionActive) {
         showVoteNotification('❌ Aucune question active !', 'error');
         return;
     }
     
+    // Incrémenter les votes
     if (optionNumber === 1) {
         option1Count++;
+        window.option1Count = option1Count; // Forcer la variable globale
     } else {
         option2Count++;
+        window.option2Count = option2Count; // Forcer la variable globale
     }
     
     totalResponses++;
+    window.totalResponses = totalResponses; // Forcer la variable globale
     
-    // Sauvegarder immédiatement
+    console.log(`📊 Nouveau total: ${option1Count} vs ${option2Count} (total: ${totalResponses})`);
+    
+    // Sauvegarder
     const proportion = option1Count / totalResponses;
     const timestamp = new Date().toISOString();
     
@@ -647,12 +557,11 @@ function submitAnswer(optionNumber) {
     
     saveDataWithDate(data);
     
+    // Mettre à jour l'affichage
     updateDisplay();
     
     const selectedOption = optionNumber === 1 ? option1 : option2;
     showVoteNotification(`✅ Vote: ${selectedOption}!`, 'success');
-    
-    console.log(`📊 Vote saved: ${option1Count}/${option2Count}, total: ${totalResponses}`);
 }
 
 // Fonction pour mettre à jour la barre de progression
@@ -670,59 +579,50 @@ function updateProgress() {
     }
 }
 
-// Fonction pour mettre à jour l'affichage
 function updateDisplay() {
-    const questionElement = document.getElementById('question-text');
-    if (questionElement) {
-        questionElement.textContent = currentQuestion || 'Chargement...';
-        
-        // FORCER LE CENTRAGE
-        questionElement.style.textAlign = 'center';
-        questionElement.style.display = 'flex';
-        questionElement.style.alignItems = 'center';
-        questionElement.style.justifyContent = 'center';
-        questionElement.style.margin = '0 auto';
-        questionElement.style.width = '100%';
-    }
+    console.log('🔄 updateDisplay called');
     
-    const option1Element = document.getElementById('option1-text');
-    const option2Element = document.getElementById('option2-text');
-    if (option1Element) option1Element.textContent = option1 || 'Option 1';
-    if (option2Element) option2Element.textContent = option2 || 'Option 2';
-    
-    const todayCountElement = document.getElementById('today-count');
-    const totalCountElement = document.getElementById('total-count');
-    const proportionElement = document.getElementById('proportion-value');
-    
-    if (todayCountElement) todayCountElement.textContent = totalResponses;
-    if (totalCountElement) {
-        const allData = localStorage.getItem('all_days_csv_data') || '';
-        const totalEntries = allData ? allData.split('\n').filter(line => line.trim() && !line.startsWith('Question')).length : 0;
-        totalCountElement.textContent = totalEntries;
-    }
-    
-    if (proportionElement && totalResponses > 0) {
-        const option1Percentage = Math.round((option1Count / totalResponses) * 100);
-        const option2Percentage = Math.round((option2Count / totalResponses) * 100);
-        proportionElement.textContent = `${option1Percentage}% / ${option2Percentage}%`;
-    } else if (proportionElement) {
-        proportionElement.textContent = '0% / 0%';
-    }
-    
-    const option1Btn = document.getElementById('option1');
-    const option2Btn = document.getElementById('option2');
-    
-    if (option1Btn && option2Btn) {
-        option1Btn.disabled = !isQuestionActive;
-        option2Btn.disabled = !isQuestionActive;
-        
-        if (isQuestionActive) {
-            option1Btn.style.opacity = '1';
-            option2Btn.style.opacity = '1';
-        } else {
-            option1Btn.style.opacity = '0.5';
-            option2Btn.style.opacity = '0.5';
+    try {
+        // Mettre à jour la question
+        const questionElement = document.getElementById('question-text');
+        if (questionElement) {
+            questionElement.textContent = currentQuestion;
         }
+        
+        // Boutons sans votes
+        const option1Element = document.getElementById('option1-text');
+        const option2Element = document.getElementById('option2-text');
+        
+        if (option1Element) option1Element.textContent = option1;
+        if (option2Element) option2Element.textContent = option2;
+        
+        // CORRIGER: Total Questions = questions répondues aujourd'hui
+        const totalCountElement = document.getElementById('total-count');
+        if (totalCountElement) {
+            const today = new Date().toISOString().split('T')[0];
+            const todayData = JSON.parse(localStorage.getItem(`question_data_${today}`) || '{}');
+            const questionsAnsweredToday = Object.keys(todayData).length;
+            totalCountElement.textContent = questionsAnsweredToday.toString();
+        }
+        
+        // Votes actuels
+        const todayCountElement = document.getElementById('today-count');
+        if (todayCountElement) {
+            todayCountElement.textContent = totalResponses.toString();
+        }
+        
+        // Proportion
+        const proportionElement = document.getElementById('proportion-value');
+        if (proportionElement) {
+            const option1Percent = totalResponses > 0 ? Math.round((option1Count / totalResponses) * 100) : 0;
+            const option2Percent = totalResponses > 0 ? Math.round((option2Count / totalResponses) * 100) : 0;
+            proportionElement.textContent = `${option1Percent}% / ${option2Percent}%`;
+        }
+        
+        console.log('✅ Display updated');
+        
+    } catch (error) {
+        console.error('❌ updateDisplay error:', error);
     }
 }
 
@@ -1020,32 +920,66 @@ function showAddQuestionModal() {
 }
 
 // Fonction pour ajouter une nouvelle question à la liste
-function addNewQuestion(option1, option2) {
-    console.log('➕ Adding new question:', option1, 'vs', option2);
+let addingQuestion = false; // Variable globale
+
+function addNewQuestion() {
+    console.log('➕ Adding question - pausing auto sync');
     
-    // Ajouter à la liste
-    const newQuestion = { option1: option1, option2: option2 };
-    QUESTIONS_LIST.push(newQuestion);
+    // PAUSE l'auto-sync
+    addingQuestion = true;
     
-    console.log('✅ Question added. Total questions:', QUESTIONS_LIST.length);
-    console.log('📝 New question:', `Do you prefer ${option1} or ${option2}?`);
+    const option1Input = prompt("Option 1:");
+    if (!option1Input?.trim()) {
+        addingQuestion = false;
+        return;
+    }
     
-    // Mettre à jour l'affichage si nécessaire
+    const option2Input = prompt("Option 2:");
+    if (!option2Input?.trim()) {
+        addingQuestion = false;
+        return;
+    }
+    
+    // Sauvegarder l'état actuel
+    const savedIndex = currentQuestionIndex;
+    const savedVotes = { option1Count, option2Count, totalResponses };
+    const savedQuestion = { currentQuestion, option1, option2 };
+    
+    // Ajouter la question
+    QUESTIONS_LIST.push({ 
+        option1: option1Input.trim(), 
+        option2: option2Input.trim() 
+    });
+    
+    // Restaurer l'état exact
+    currentQuestionIndex = savedIndex;
+    currentQuestion = savedQuestion.currentQuestion;
+    option1 = savedQuestion.option1;
+    option2 = savedQuestion.option2;
+    option1Count = savedVotes.option1Count;
+    option2Count = savedVotes.option2Count;
+    totalResponses = savedVotes.totalResponses;
+    
+    // Reprendre l'auto-sync après 2 secondes
+    setTimeout(() => {
+        addingQuestion = false;
+        console.log('✅ Auto-sync resumed');
+    }, 2000);
+    
+    updateDisplay();
     updateProgress();
     
-    // Notification de succès
-    showNotification(`➕ NOUVELLE QUESTION AJOUTÉE !
+    showNotification(`✅ Question ajoutée !
 
-Question ${QUESTIONS_LIST.length}: Do you prefer ${option1} or ${option2}?
+"${option1Input.trim()}" vs "${option2Input.trim()}"
 
-✅ Ajoutée à la position ${QUESTIONS_LIST.length}
 📊 Total: ${QUESTIONS_LIST.length} questions
+📍 Vous restez sur Question ${savedIndex + 1}
 
-🎯 Cette question sera posée quand vous y arriverez !`, 'success');
-    
-    // Log pour debug
-    console.log('📋 Updated QUESTIONS_LIST:', QUESTIONS_LIST);
+Auto-sync reprend dans 2s...`, 'success');
 }
+
+
 
 // Fonction pour voir toutes les questions
 function showAllQuestions() {
@@ -1153,199 +1087,121 @@ function fillCurrentForm() {
     syncWithRealTime();
 }
 
-// Fonction corrigée pour passer à la question suivante
-function goToNextQuestion() {
-    console.log('➡️ Going to next question manually');
-    console.log('Current index before:', currentQuestionIndex);
-    console.log('Total questions:', QUESTIONS_LIST.length);
-    
-    // Sauvegarder les données actuelles si il y a des votes
-    if (totalResponses > 0) {
-        console.log('💾 Saving current question data...');
-        saveCurrentQuestionData();
-    }
-    
-    // Calculer le prochain index correctement
-    const nextIndex = (currentQuestionIndex + 1) % QUESTIONS_LIST.length;
-    console.log('Next index calculated:', nextIndex);
-    
-    // Mettre à jour l'index AVANT de charger
-    currentQuestionIndex = nextIndex;
-    
-    // Vérifier que l'index est valide
-    if (currentQuestionIndex >= QUESTIONS_LIST.length) {
-        console.log('⚠️ Index out of bounds, resetting to 0');
-        currentQuestionIndex = 0;
-    }
-    
-    // Charger la nouvelle question
-    console.log('📥 Loading question at index:', currentQuestionIndex);
-    
-    if (QUESTIONS_LIST[currentQuestionIndex]) {
-        const questionData = QUESTIONS_LIST[currentQuestionIndex];
-        option1 = questionData.option1;
-        option2 = questionData.option2;
-        currentQuestion = `Do you prefer ${option1} or ${option2}?`;
-        
-        console.log('✅ Question loaded:', currentQuestion);
-    } else {
-        console.error('❌ No question found at index:', currentQuestionIndex);
-        // Fallback à la première question
-        currentQuestionIndex = 0;
-        const questionData = QUESTIONS_LIST[0];
-        option1 = questionData.option1;
-        option2 = questionData.option2;
-        currentQuestion = `Do you prefer ${option1} or ${option2}?`;
-    }
-    
-    // Reset votes pour la nouvelle question
-    option1Count = 0;
-    option2Count = 0;
-    totalResponses = 0;
-    
-    // Reset timer complet
-    isQuestionActive = true;
-    timeRemaining = QUESTION_DURATION_MINUTES * 60;
-    
-    // Activer le mode manuel pour éviter les conflits
-    manualMode = true;
-    
-    // Redémarrer le timer
-    stopTimers();
-    startRealTimeCountdown();
-    
-    // Mettre à jour l'affichage
-    updateDisplay();
-    updateProgress();
-    updateStats();
-    
-    // Notification de succès
-    showNotification(`➡️ QUESTION SUIVANTE !
-
-🎯 Question ${currentQuestionIndex + 1}/${QUESTIONS_LIST.length}
-${currentQuestion}
-
-⏰ ${Math.floor(timeRemaining / 60)} minutes
-🎮 Mode manuel activé`, 'success');
-    
-    console.log('✅ Next question completed');
-    console.log('Final state:', {
-        index: currentQuestionIndex,
-        question: currentQuestion,
-        totalQuestions: QUESTIONS_LIST.length,
-        manualMode: manualMode
-    });
-}
-
-function stopTest() {
-    console.log('🔧 Admin: stopTest called');
-    if (confirm('🛑 Passer à la question suivante ?')) {
-        // Calculer la prochaine question
-        const nextQuestionIndex = currentQuestionIndex + 1;
-        if (nextQuestionIndex < QUESTIONS_LIST.length) {
-            // Forcer le passage à la question suivante
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const startTime = new Date(today);
-            startTime.setHours(DAILY_START_HOUR, 0, 0, 0);
-            
-            // Calculer le temps pour la prochaine question
-            const nextQuestionStartMinute = nextQuestionIndex * QUESTION_DURATION_MINUTES;
-            const nextQuestionTime = new Date(startTime.getTime() + nextQuestionStartMinute * 60000);
-            
-            // Ajuster l'heure système (simulation)
-            console.log(`⏭️ Simulating time jump to question ${nextQuestionIndex + 1}`);
-            
-            // Re-synchroniser
-            syncWithRealTime();
-        }
-        showNotification('⏭️ Passage à la question suivante !', 'info');
-    }
-}
-
-function testVoting() {
-    console.log('🔧 Admin: testVoting called');
-    if (!isQuestionActive) {
-        syncWithRealTime();
-    }
-    
-    setTimeout(() => submitAnswer(1), 500);
-    setTimeout(() => submitAnswer(2), 1000);
-    setTimeout(() => submitAnswer(1), 1500);
-    setTimeout(() => submitAnswer(2), 2000);
-    setTimeout(() => submitAnswer(1), 2500);
-}
-
-// Reset complet avec retour à la question 1
 function resetData() {
-    console.log('🔄 Complete reset initiated');
-    
-    // Confirmation
-    if (!confirm('⚠️ RESET COMPLET !\n\n• Toutes les données seront supprimées\n• Retour à la question 1\n• Timer redémarré\n\nContinuer ?')) {
+    if (!confirm('🔄 RESET TOTAL ?\n\n⚠️ Ceci va EFFACER :\n• Toutes les données sauvées\n• Tous les emails possibles\n• Toutes les statistiques\n\nContinuer ?')) {
         return;
     }
     
-    // 1. Vider le localStorage
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('question_data_') || key === 'all_days_csv_data')) {
-            keysToRemove.push(key);
-        }
+    console.log('🔄 RESET TOTAL - Effacement complet');
+    
+    // ARRÊTER tous les timers
+    stopTimers();
+    
+    // 1. EFFACER TOUTE LA MÉMOIRE PERSISTANTE
+    SAVE_AUTHORIZED = true; // Autoriser les suppressions
+    
+    try {
+        // Effacer toutes les données de questionnaire
+        const allKeys = Object.keys(localStorage);
+        allKeys.forEach(key => {
+            if (key.startsWith('question_data_') || 
+                key === 'all_days_csv_data' || 
+                key === 'my_custom_questions' ||
+                key === 'custom_questions_list') {
+                localStorage.removeItem(key);
+                console.log('🗑️ Supprimé:', key);
+            }
+        });
+        
+        console.log('✅ localStorage complètement effacé');
+        
+    } catch (error) {
+        console.error('❌ Erreur effacement:', error);
+    } finally {
+        SAVE_AUTHORIZED = false;
     }
     
-    keysToRemove.forEach(key => {
-        localStorage.removeItem(key);
-        console.log('🗑️ Removed:', key);
-    });
-    
-    // 2. Reset toutes les variables
+    // 2. RESET COMPLET des variables
     currentQuestionIndex = 0;
     option1Count = 0;
     option2Count = 0;
     totalResponses = 0;
-    isQuestionActive = true;
-    timeRemaining = QUESTION_DURATION_MINUTES * 60; // Temps complet
     
-    // 3. Charger la première question
-    if (QUESTIONS_LIST && QUESTIONS_LIST.length > 0) {
-        const questionData = QUESTIONS_LIST[0];
-        option1 = questionData.option1;
-        option2 = questionData.option2;
-        currentQuestion = `Do you prefer ${option1} or ${option2}?`;
-        
-        console.log('✅ Loaded question 1:', currentQuestion);
+    // 3. Première question
+    const q = QUESTIONS_LIST[0];
+    option1 = q.option1;
+    option2 = q.option2;
+    currentQuestion = `Do you prefer ${option1} or ${option2}?`;
+    
+    // 4. Reset timer
+    timeRemaining = QUESTION_DURATION_MINUTES * 60;
+    isQuestionActive = true;
+    
+    // 5. Réactiver les boutons
+    const option1Btn = document.getElementById('option1');
+    const option2Btn = document.getElementById('option2');
+    if (option1Btn && option2Btn) {
+        option1Btn.disabled = false;
+        option2Btn.disabled = false;
+        option1Btn.style.opacity = '1';
+        option2Btn.style.opacity = '1';
     }
     
-    // 4. Arrêter tous les timers
-    stopTimers();
+    // 6. Mise à jour forcée
+    setTimeout(() => {
+        updateDisplay();
+        updateProgress();
+        startRealTimeCountdown();
+    }, 200);
     
-    // 5. Redémarrer le timer avec le temps complet
-    startRealTimeCountdown();
+    showNotification(`🔄 RESET TOTAL TERMINÉ !
+
+✅ Toutes les données effacées
+✅ Plus d'emails possibles
+✅ Statistiques remises à zéro
+✅ Question 1 rechargée
+
+Vous repartez de zéro !`, 'success');
+}
+
+function goToNextQuestion() {
+    console.log('➡️ goToNextQuestion called');
     
-    // 6. Mettre à jour l'affichage
+    // Passer à la question suivante
+    currentQuestionIndex = (currentQuestionIndex + 1) % QUESTIONS_LIST.length;
+    
+    // Charger la nouvelle question
+    const q = QUESTIONS_LIST[currentQuestionIndex];
+    option1 = q.option1;
+    option2 = q.option2;
+    currentQuestion = `Do you prefer ${option1} or ${option2}?`;
+    
+    // Reset votes pour cette question
+    option1Count = 0;
+    option2Count = 0;
+    totalResponses = 0;
+    
+    // Reset timer
+    timeRemaining = QUESTION_DURATION_MINUTES * 60;
+    isQuestionActive = true;
+    
     updateDisplay();
     updateProgress();
-    updateStats();
+    startRealTimeCountdown();
     
-    // 7. Notification de succès
-    showNotification(`🔄 RESET COMPLET EFFECTUÉ !
+    showNotification(`➡️ QUESTION SUIVANTE !
 
-✅ Toutes les données supprimées
-🎯 Question 1 rechargée
-⏰ Timer redémarré (${Math.floor(timeRemaining / 60)}:${(timeRemaining % 60).toString().padStart(2, '0')})
-🔄 Prêt pour de nouvelles réponses !
-
-Question: ${currentQuestion}`, 'success');
-    
-    console.log('✅ Complete reset finished');
-    console.log('Current state:', {
-        questionIndex: currentQuestionIndex,
-        question: currentQuestion,
-        timeRemaining: timeRemaining,
-        isActive: isQuestionActive
-    });
+Question ${currentQuestionIndex + 1}: ${currentQuestion}
+Prêt à voter !`, 'success');
 }
+
+// Exposer les fonctions
+window.resetData = resetData;
+window.goToNextQuestion = goToNextQuestion;
+
+console.log('✅ Emergency functions loaded');
+
+
 
 
 // Clé pour sauvegarder les questions personnalisées
@@ -1802,7 +1658,7 @@ window.addNewQuestion = addNewQuestion;
 window.showAllQuestions = showAllQuestions;
 window.showAllDaysData = showAllDaysData;
 // Exposer les fonctions d'email
-window.showDaySelector = showDaySelector;
+//window.showDaySelector = showDaySelector;
 window.sendDayEmail = sendDayEmail;
 window.generateDayCSV = generateDayCSV;
 window.generateAllDaysCSV = generateAllDaysCSV;
@@ -1822,3 +1678,4 @@ console.log('🔧 Admin controls available');
 console.log('➕ Dynamic question adding enabled');
 console.log('📊 Multi-day data persistence');
 console.log('✅ Ready to use - Test with 1 minute intervals!');
+
