@@ -57,7 +57,7 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-label">Total Questions</div>
+                <div class="stat-label">Questions Today</div>
                 <div class="stat-value" id="total-count">0</div>
             </div>
         </aside>
@@ -65,15 +65,12 @@
         <!-- Admin Panel -->
         <div class="admin-panel">
             <h3>🔧 Admin Controls</h3>
-            <button onclick="stopTest()" class="admin-btn" style="background: #10b981;">✅ Finish Now</button>
             <button onclick="goToNextQuestion()" class="admin-btn">📋 Next Question</button>
             <button onclick="downloadCSV()" class="admin-btn">📥 Download CSV</button>
-            <button onclick="testVoting()" class="admin-btn" style="background: #2196F3;">🧪 Test Auto</button>
             <button onclick="resetData()" class="admin-btn" style="background: #ff9800;">🔄 Reset All</button>
             <button onclick="showAllQuestions()" class="admin-btn" style="background: #2196F3;">📋 View All Questions</button>
             <button onclick="addNewQuestion()" class="admin-btn" style="background: #4CAF50;">➕ Add Question</button>
-<button onclick="viewCustomQuestions()" class="admin-btn" style="background: #2196F3;">📝 View Custom</button>
-        </div>
+       </div>
 
         <!-- Email Button -->
         <div class="email-section" style="margin-top: 30px; text-align: center; padding: 20px; background: #f8f9fa; border-radius: 15px;">
@@ -98,7 +95,7 @@
                 📧 SEND CSV EMAIL
             </button>
             <p style="margin-top: 10px; color: #666; font-size: 14px;">
-                Choose which day to send • Excel-ready format
+                 • Excel-ready format • 
             </p>
         </div>
     </div>
@@ -106,4 +103,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
