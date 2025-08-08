@@ -1464,18 +1464,65 @@ function downloadCSV() {
     const dayNumber = Math.ceil((today - startOfYear) / (1000 * 60 * 60 * 24));
     const fileName = `questionnaire_data_Day${dayNumber}.csv`;
     
-    const blob = new Blob([allData], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', fileName);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showNotification(`📥 CSV téléchargé: ${fileName}`, 'success');
+    // SOLUTION UNIVERSELLE - iPhone + PC Windows
+    try {
+        // Créer le blob avec BOM pour Excel
+        const BOM = '\uFEFF'; // Byte Order Mark pour UTF-8
+        const csvContent = BOM + allData;
+        const blob = new Blob([csvContent], { 
+            type: 'text/csv;charset=utf-8;' 
+        });
+        
+        // Détecter le navigateur/OS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+            // Internet Explorer
+            window.navigator.msSaveOrOpenBlob(blob, fileName);
+        } else {
+            // Tous les autres navigateurs (Chrome, Firefox, Safari, Edge)
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            
+            link.href = url;
+            link.download = fileName;
+            link.style.display = 'none';
+            
+            // Attributs pour Safari iOS
+            if (isIOS || isSafari) {
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+            }
+            
+            // Ajouter au DOM, cliquer, nettoyer
+            document.body.appendChild(link);
+            link.click();
+            
+            // Nettoyer après un délai
+            setTimeout(() => {
+                if (document.body.contains(link)) {
+                    document.body.removeChild(link);
+                }
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+        
+        // Message adapté selon la plateforme
+        let message = `📥 CSV téléchargé: ${fileName}\n\n`;
+        
+        if (isIOS) {
+            message += `📱 iPhone/iPad:\n• Vérifiez l'app Fichiers > Téléchargements\n• Ou Safari > Téléchargements`;
+        } else {
+            message += `💻 PC Windows:\n• Vérifiez votre dossier Téléchargements\n• Ou la barre de téléchargement du navigateur`;
+        }
+        
+        showNotification(message, 'success');
+        
+    } catch (error) {
+        console.error('❌ Download error:', error);
+        showNotification(`❌ Erreur de téléchargement: ${error.message}`, 'error');
+    }
 }
 
 // Fonctions pour les notifications
@@ -1678,4 +1725,5 @@ console.log('🔧 Admin controls available');
 console.log('➕ Dynamic question adding enabled');
 console.log('📊 Multi-day data persistence');
 console.log('✅ Ready to use - Test with 1 minute intervals!');
+
 
