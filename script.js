@@ -80,7 +80,7 @@ function calculateCurrentQuestion() {
     const now = new Date();
     
     // CALCULER LE JOUR depuis une date de référence
-    const startDate = new Date('2025-07-22'); // Date de démarrage du questionnaire
+    const startDate = new Date('2025-08-11'); // Date de démarrage du questionnaire
     const daysDifference = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
     
     // Index basé sur le jour
@@ -1725,5 +1725,6 @@ console.log('🔧 Admin controls available');
 console.log('➕ Dynamic question adding enabled');
 console.log('📊 Multi-day data persistence');
 console.log('✅ Ready to use - Test with 1 minute intervals!');
+
 
 
