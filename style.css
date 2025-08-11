@@ -513,11 +513,11 @@ input[type="text"] {
     to { opacity: 0; transform: translateX(100%); }
 }
 
-/* CORRECTION SPÉCIALE - UNIQUEMENT MODE PAYSAGE IPAD MINI */
+/* CORRECTION SPÉCIALE - UNIQUEMENT MODE PAYSAGE IPAD MINI - ZONE AGRANDIE */
 @media screen and (orientation: landscape) and (max-width: 1024px) and (max-height: 768px) {
     /* RESET BODY POUR PAYSAGE */
     body {
-        padding: 5px !important;
+        padding: 3px !important; /* ENCORE PLUS RÉDUIT */
         margin: 0 !important;
         display: block !important;
         align-items: unset !important;
@@ -527,12 +527,12 @@ input[type="text"] {
         overflow-y: auto !important;
     }
     
-    /* CONTAINER ADAPTÉ À LA HAUTEUR LIMITÉE */
+    /* CONTAINER TRÈS COMPACT */
     .container {
-        width: 98% !important;
+        width: 99% !important;
         max-width: none !important;
-        margin: 3px auto !important;
-        padding: 10px !important; /* RÉDUIT pour laisser place à la question */
+        margin: 2px auto !important; /* TRÈS RÉDUIT */
+        padding: 8px !important; /* TRÈS RÉDUIT */
         position: static !important;
         transform: none !important;
         left: auto !important;
@@ -541,34 +541,34 @@ input[type="text"] {
         min-height: auto !important;
     }
     
-    /* HEADER TRÈS COMPACT POUR PAYSAGE */
+    /* HEADER MINIMALISTE */
     .header {
-        margin-bottom: 4px !important; /* TRÈS RÉDUIT */
+        margin-bottom: 2px !important; /* MINIMAL */
         padding: 0 !important;
     }
     
     .header h1 {
-        font-size: 1.4rem !important; /* RÉDUIT pour laisser place */
-        margin-bottom: 2px !important;
-        line-height: 1.1 !important;
+        font-size: 1.2rem !important; /* TRÈS PETIT */
+        margin-bottom: 1px !important;
+        line-height: 1 !important;
     }
     
-    /* PROGRESS BAR TRÈS FINE */
+    /* PROGRESS BAR INVISIBLE PRESQUE */
     .progress-bar {
-        height: 4px !important; /* TRÈS FIN */
-        margin-bottom: 2px !important;
+        height: 3px !important; /* TRÈS FIN */
+        margin-bottom: 1px !important;
     }
     
     .day-counter {
-        font-size: 0.9rem !important;
-        margin-bottom: 4px !important;
+        font-size: 0.8rem !important; /* TRÈS PETIT */
+        margin-bottom: 2px !important;
     }
     
-    /* QUESTION AREA AGRANDIE MÊME EN PAYSAGE MINI */
+    /* QUESTION AREA MAXIMISÉE - 75% DE L'ÉCRAN ! */
     .question-area {
-        min-height: 65vh !important; /* AUGMENTÉ même en paysage mini */
+        min-height: 75vh !important; /* ÉNORME - 75% de l'écran ! */
         height: auto !important;
-        margin: 6px 0 !important;
+        margin: 3px 0 !important; /* MINIMAL */
         padding: 0 !important;
         display: flex !important;
         align-items: center !important;
@@ -576,10 +576,10 @@ input[type="text"] {
     }
     
     .question-card {
-        min-height: 180px !important; /* AUGMENTÉ de 140px */
+        min-height: 220px !important; /* AGRANDI */
         height: auto !important;
-        padding: 20px 15px !important; /* AUGMENTÉ */
-        margin: 5px 0 !important;
+        padding: 25px 20px !important; /* AGRANDI */
+        margin: 3px 0 !important;
         width: 100% !important;
         flex: 1 !important;
         display: flex !important;
@@ -588,10 +588,10 @@ input[type="text"] {
     }
     
     .question-text {
-        font-size: 2.1rem !important; /* AUGMENTÉ de 1.9rem */
-        min-height: 85px !important; /* AUGMENTÉ de 70px */
+        font-size: 2.4rem !important; /* BEAUCOUP PLUS GROS - de 1.9rem à 2.4rem */
+        min-height: 100px !important; /* PLUS HAUT - de 70px à 100px */
         height: auto !important;
-        padding: 12px 8px !important; /* AUGMENTÉ */
+        padding: 15px 10px !important; /* PLUS DE PADDING */
         margin: 0 !important;
         line-height: 1.2 !important;
         display: flex !important;
@@ -599,80 +599,82 @@ input[type="text"] {
         justify-content: center !important;
         text-align: center !important;
         flex: 1 !important;
+        font-weight: bold !important; /* AJOUTÉ */
     }
     
-    /* BOUTONS CÔTE À CÔTE AGRANDIS EN PAYSAGE */
+    /* BOUTONS CÔTE À CÔTE BEAUCOUP PLUS GROS */
     .options {
         display: flex !important;
         flex-direction: row !important;
-        gap: 25px !important; /* AUGMENTÉ de 20px */
+        gap: 30px !important; /* AGRANDI de 20px à 30px */
         justify-content: center !important;
         align-items: center !important;
-        margin: 15px 0 !important; /* AUGMENTÉ */
-        padding: 10px 0 !important; /* AJOUTÉ */
+        margin: 20px 0 !important; /* AGRANDI de 12px à 20px */
+        padding: 15px 0 !important; /* AGRANDI */
         width: 100% !important;
     }
     
     .option-btn {
         flex: 1 !important;
-        max-width: 240px !important; /* AUGMENTÉ de 220px */
-        min-height: 75px !important; /* AUGMENTÉ de 65px */
+        max-width: 280px !important; /* AGRANDI de 220px à 280px */
+        min-height: 90px !important; /* AGRANDI de 65px à 90px */
         height: auto !important;
-        font-size: 1.3rem !important; /* AUGMENTÉ de 1.2rem */
-        padding: 18px 12px !important; /* AUGMENTÉ */
+        font-size: 1.5rem !important; /* AGRANDI de 1.2rem à 1.5rem */
+        padding: 25px 15px !important; /* AGRANDI de 15px 10px */
         margin: 0 !important;
-        border-radius: 12px !important;
+        border-radius: 15px !important; /* AGRANDI */
         line-height: 1.1 !important;
+        font-weight: bold !important; /* AJOUTÉ */
     }
     
-    /* STATS TRÈS COMPACTES EN LIGNE */
+    /* STATS ULTRA COMPACTES */
     .stats-panel {
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
-        gap: 6px !important; /* RÉDUIT pour laisser place */
-        margin: 6px 0 !important; /* RÉDUIT */
+        gap: 4px !important; /* TRÈS RÉDUIT */
+        margin: 3px 0 !important; /* TRÈS RÉDUIT */
         padding: 0 !important;
     }
     
     .stat-card {
-        padding: 6px 4px !important; /* RÉDUIT */
-        border-radius: 6px !important;
+        padding: 4px 2px !important; /* TRÈS RÉDUIT */
+        border-radius: 4px !important;
         min-height: auto !important;
     }
     
     .stat-label {
-        font-size: 0.75rem !important; /* RÉDUIT */
-        margin-bottom: 2px !important;
+        font-size: 0.7rem !important; /* TRÈS PETIT */
+        margin-bottom: 1px !important;
     }
     
     .stat-value {
-        font-size: 1.1em !important; /* RÉDUIT */
-        line-height: 1.1 !important;
+        font-size: 1em !important; /* RÉDUIT */
+        line-height: 1 !important;
     }
     
-    /* ADMIN PANEL TRÈS COMPACT */
+    /* ADMIN PANEL ULTRA COMPACT */
     .admin-panel {
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
-        gap: 4px !important; /* RÉDUIT */
-        margin: 6px 0 !important; /* RÉDUIT */
-        padding: 6px !important; /* RÉDUIT */
+        gap: 3px !important; /* TRÈS RÉDUIT */
+        margin: 3px 0 !important; /* TRÈS RÉDUIT */
+        padding: 4px !important; /* TRÈS RÉDUIT */
     }
     
     .admin-panel h3 {
         grid-column: 1 / -1 !important;
-        font-size: 0.9rem !important; /* RÉDUIT */
-        margin-bottom: 4px !important;
+        font-size: 0.8rem !important; /* TRÈS PETIT */
+        margin-bottom: 2px !important;
         text-align: center !important;
     }
     
     .admin-btn {
-        min-height: 35px !important; /* RÉDUIT */
-        font-size: 11px !important; /* RÉDUIT */
-        padding: 6px 3px !important; /* RÉDUIT */
+        min-height: 30px !important; /* TRÈS RÉDUIT */
+        font-size: 10px !important; /* TRÈS PETIT */
+        padding: 4px 2px !important; /* TRÈS RÉDUIT */
         margin: 0 !important;
-        border-radius: 4px !important;
-        line-height: 1.1 !important;
+        border-radius: 3px !important;
+        line-height: 1 !important;
     }
     
     /* NOTIFICATIONS COMPACTES */
@@ -688,29 +690,36 @@ input[type="text"] {
     }
 }
 
-/* SPÉCIFIQUE IPAD MINI PAYSAGE (1024x768) */
+/* SPÉCIFIQUE IPAD MINI PAYSAGE (1024x768) - ZONE MAXIMISÉE */
 @media screen and (width: 1024px) and (height: 768px) and (orientation: landscape) {
     .container {
         width: 99% !important;
-        padding: 8px !important; /* TRÈS RÉDUIT */
+        padding: 6px !important; /* TRÈS RÉDUIT */
     }
     
     .header h1 {
-        font-size: 1.3rem !important; /* TRÈS RÉDUIT */
+        font-size: 1.1rem !important; /* TRÈS PETIT */
     }
     
     .question-area {
-        min-height: 68vh !important; /* MAXIMISÉ */
+        min-height: 78vh !important; /* MAXIMISÉ - 78% de l'écran ! */
+    }
+    
+    .question-card {
+        min-height: 240px !important; /* AGRANDI */
     }
     
     .question-text {
-        font-size: 2rem !important; /* OPTIMISÉ */
-        min-height: 80px !important;
+        font-size: 2.6rem !important; /* TRÈS GROS pour iPad Mini */
+        min-height: 110px !important; /* PLUS HAUT */
+        font-weight: bold !important;
     }
     
     .option-btn {
-        max-width: 220px !important;
-        min-height: 70px !important;
-        font-size: 1.2rem !important;
+        max-width: 300px !important; /* PLUS LARGE */
+        min-height: 95px !important; /* PLUS HAUT */
+        font-size: 1.6rem !important; /* PLUS GROS */
+        padding: 28px 18px !important; /* PLUS DE PADDING */
+        font-weight: bold !important;
     }
 }
