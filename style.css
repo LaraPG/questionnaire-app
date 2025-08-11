@@ -163,23 +163,20 @@ body {
 }
 
 /* STATS ET ADMIN COMPACTS POUR LAISSER PLACE À LA QUESTION */
-/* CENTRER LES STATS QUAND IL Y EN A SEULEMENT 2 */
 .stats-panel {
-    display: flex !important; /* Changer de grid à flex */
-    justify-content: center !important; /* Centrer horizontalement */
-    gap: 20px !important; /* Espace entre les cartes */
-    margin-bottom: 15px;
-    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px; /* RÉDUIT de 15px à 12px */
+    margin-bottom: 15px; /* RÉDUIT de 20px à 15px */
+    margin-top: 10px; /* RÉDUIT de 15px à 10px */
 }
 
 .stat-card {
     background: #f1f5f9;
     border-radius: 12px;
-    padding: 12px;
+    padding: 12px; /* RÉDUIT de 15px à 12px */
     text-align: center;
     border-left: 4px solid #10b981;
-    min-width: 150px; /* Largeur minimale pour garder la forme */
-    flex: 0 0 auto; /* Ne pas étirer les cartes */
 }
 
 .stat-label {
