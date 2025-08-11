@@ -479,210 +479,195 @@ input[type="text"] {
     from { opacity: 1; transform: translateX(0); }
     to { opacity: 0; transform: translateX(100%); }
 }
-/* FORCE BRUTE IPAD MINI - CORRECTION DÉFINITIVE */
-@media screen and (max-width: 1024px) and (orientation: landscape) {
-    /* RESET COMPLET */
+/* CORRECTION SPÉCIALE - UNIQUEMENT MODE PAYSAGE IPAD MINI */
+@media screen and (orientation: landscape) and (max-width: 1024px) and (max-height: 768px) {
+    /* RESET BODY POUR PAYSAGE */
     body {
         padding: 5px !important;
         margin: 0 !important;
-        min-height: 100vh !important;
         display: block !important;
         align-items: unset !important;
         justify-content: unset !important;
+        min-height: 100vh !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
     }
     
+    /* CONTAINER ADAPTÉ À LA HAUTEUR LIMITÉE */
     .container {
+        width: 98% !important;
+        max-width: none !important;
+        margin: 3px auto !important;
+        padding: 12px !important;
         position: static !important;
         transform: none !important;
         left: auto !important;
         top: auto !important;
-        width: 98% !important;
-        max-width: none !important;
-        margin: 5px auto !important;
-        padding: 15px !important;
-        /* FORCER L'AFFICHAGE COMPLET */
         height: auto !important;
         min-height: auto !important;
-        overflow: visible !important;
     }
     
-    /* HEADER FORCÉ VISIBLE */
+    /* HEADER COMPACT POUR PAYSAGE */
     .header {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 6px !important;
         padding: 0 !important;
-        height: auto !important;
     }
     
     .header h1 {
-        display: block !important;
-        visibility: visible !important;
-        font-size: 1.8rem !important;
-        margin-bottom: 5px !important;
-        color: #333 !important;
+        font-size: 1.6rem !important;
+        margin-bottom: 4px !important;
+        line-height: 1.1 !important;
     }
     
-    /* PROGRESS BAR FORCÉE VISIBLE */
+    /* PROGRESS BAR FINE */
     .progress-bar {
-        display: block !important;
-        visibility: visible !important;
-        height: 6px !important;
-        margin-bottom: 5px !important;
+        height: 5px !important;
+        margin-bottom: 4px !important;
     }
     
     .day-counter {
-        display: block !important;
-        visibility: visible !important;
-        margin-bottom: 8px !important;
-        font-size: 1rem !important;
+        font-size: 0.95rem !important;
+        margin-bottom: 6px !important;
     }
     
-    /* QUESTION COMPACTE */
+    /* QUESTION AREA COMPACTE POUR PAYSAGE */
     .question-area {
         min-height: auto !important;
         height: auto !important;
         margin: 8px 0 !important;
         padding: 0 !important;
-        display: block !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     
     .question-card {
-        min-height: 150px !important;
+        min-height: 140px !important;
         height: auto !important;
-        padding: 15px 10px !important;
+        padding: 15px 12px !important;
         margin: 5px 0 !important;
+        width: 100% !important;
     }
     
     .question-text {
-        font-size: 1.8rem !important;
-        min-height: 60px !important;
+        font-size: 1.9rem !important;
+        min-height: 70px !important;
         height: auto !important;
-        padding: 10px 5px !important;
+        padding: 8px 6px !important;
         margin: 0 !important;
         line-height: 1.2 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
     }
     
-    /* BOUTONS COMPACTS CÔTE À CÔTE */
+    /* BOUTONS CÔTE À CÔTE EN PAYSAGE */
     .options {
         display: flex !important;
         flex-direction: row !important;
-        gap: 15px !important;
+        gap: 20px !important;
         justify-content: center !important;
-        margin: 10px 0 !important;
+        align-items: center !important;
+        margin: 12px 0 !important;
         padding: 0 !important;
+        width: 100% !important;
     }
     
     .option-btn {
         flex: 1 !important;
-        max-width: 200px !important;
-        min-height: 60px !important;
-        font-size: 1.1rem !important;
-        padding: 12px 8px !important;
+        max-width: 220px !important;
+        min-height: 65px !important;
+        height: auto !important;
+        font-size: 1.2rem !important;
+        padding: 15px 10px !important;
         margin: 0 !important;
+        border-radius: 12px !important;
+        line-height: 1.1 !important;
     }
     
-    /* STATS COMPACTES */
+    /* STATS COMPACTES EN LIGNE */
     .stats-panel {
+        display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
         gap: 8px !important;
-        margin: 8px 0 !important;
+        margin: 10px 0 !important;
+        padding: 0 !important;
     }
     
     .stat-card {
-        padding: 8px !important;
-        font-size: 0.9rem !important;
+        padding: 8px 6px !important;
+        border-radius: 8px !important;
+        min-height: auto !important;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem !important;
+        margin-bottom: 4px !important;
     }
     
     .stat-value {
-        font-size: 1.2em !important;
+        font-size: 1.3em !important;
+        line-height: 1.1 !important;
     }
     
-    /* ADMIN COMPACT */
+    /* ADMIN PANEL COMPACT */
     .admin-panel {
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
-        gap: 5px !important;
+        gap: 6px !important;
         margin: 8px 0 !important;
-        padding: 10px !important;
+        padding: 8px !important;
+    }
+    
+    .admin-panel h3 {
+        grid-column: 1 / -1 !important;
+        font-size: 1rem !important;
+        margin-bottom: 6px !important;
+        text-align: center !important;
     }
     
     .admin-btn {
-        min-height: 40px !important;
+        min-height: 42px !important;
         font-size: 12px !important;
         padding: 8px 4px !important;
         margin: 0 !important;
+        border-radius: 6px !important;
+        line-height: 1.1 !important;
+    }
+    
+    /* NOTIFICATIONS COMPACTES */
+    #main-notification {
+        font-size: 16px !important;
+        padding: 20px !important;
+        max-width: 85% !important;
+    }
+    
+    .vote-notification {
+        font-size: 14px !important;
+        padding: 10px 15px !important;
     }
 }
 
-/* SI ÇA NE MARCHE TOUJOURS PAS - VERSION ULTRA COMPACTE */
-@media screen and (max-width: 1024px) and (max-height: 768px) {
-    * {
-        box-sizing: border-box !important;
-    }
-    
-    body {
-        padding: 3px !important;
-        font-size: 14px !important;
-    }
-    
+/* SPÉCIFIQUE IPAD MINI PAYSAGE (1024x768) */
+@media screen and (width: 1024px) and (height: 768px) and (orientation: landscape) {
     .container {
         width: 99% !important;
         padding: 10px !important;
-        margin: 2px auto !important;
     }
     
     .header h1 {
         font-size: 1.5rem !important;
-        margin-bottom: 3px !important;
-    }
-    
-    .progress-bar {
-        height: 4px !important;
-        margin-bottom: 3px !important;
-    }
-    
-    .day-counter {
-        font-size: 0.9rem !important;
-        margin-bottom: 5px !important;
-    }
-    
-    .question-card {
-        min-height: 120px !important;
-        padding: 10px 8px !important;
-        margin: 3px 0 !important;
     }
     
     .question-text {
-        font-size: 1.5rem !important;
-        min-height: 50px !important;
-        padding: 8px 5px !important;
+        font-size: 1.8rem !important;
+        min-height: 65px !important;
     }
     
     .option-btn {
-        min-height: 50px !important;
-        font-size: 1rem !important;
-        padding: 10px 6px !important;
-    }
-    
-    .stats-panel {
-        gap: 5px !important;
-        margin: 5px 0 !important;
-    }
-    
-    .stat-card {
-        padding: 6px !important;
-    }
-    
-    .admin-panel {
-        padding: 8px !important;
-        margin: 5px 0 !important;
-    }
-    
-    .admin-btn {
-        min-height: 35px !important;
-        font-size: 11px !important;
-        padding: 6px 3px !important;
+        max-width: 200px !important;
+        min-height: 60px !important;
+        font-size: 1.1rem !important;
     }
 }
