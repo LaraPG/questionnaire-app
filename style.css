@@ -451,3 +451,44 @@ input[type="text"] {
         min-height: 45vh !important;
     }
 }
+/* CORRECTION RAPIDE - CENTRAGE PAYSAGE IPAD */
+@media screen and (orientation: landscape) and (min-width: 1024px) {
+    body {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 100vh !important;
+    }
+    
+    .container {
+        margin: 0 auto !important;
+        max-width: 900px !important;
+        width: 95% !important;
+        /* CENTRAGE PARFAIT */
+        position: relative !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+    
+    .question-area {
+        min-height: 50vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .question-text {
+        font-size: 3.2rem !important;
+        text-align: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .options {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 40px !important;
+        justify-content: center !important;
+    }
+}
