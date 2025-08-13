@@ -46,7 +46,7 @@ const QUESTIONS_LIST = [
     { option1: "Coffee", option2: "Tea", template: "Do you prefer {1} or {2}?" },
     { option1: "Doing sport", option2: "Watch TV", template: "Do you prefer {1} or {2}?" },
     { option1: "Orange", option2: "Green", template: "Do you prefer {1} or {2}?" },
-    { option1: "Sea", option2: "Countryside", template: "Where dou you prefre living {1} or {2}?" },
+    { option1: "Sea", option2: "Countryside", template: "Where do you prefer to live {1} or {2}?" },
     { option1: "Facebook", option2: "Instagram", template: "Are you more {1} or {2}?" },
     { option1: "Sweet", option2: "Salty", template: "Are you more of a {1} or {2} person?" },
     { option1: "social and expressive", option2: "organized and thoughtful", template: "Are you more {1} or {2}?" },
@@ -1761,3 +1761,4 @@ console.log('🔧 Admin controls available');
 console.log('➕ Dynamic question adding enabled');
 console.log('📊 Multi-day data persistence');
 console.log('✅ Ready to use - Test with 1 minute intervals!');
+
