@@ -42,23 +42,27 @@ let DAILY_END_HOUR = 24;
 
 // Liste des questions prédéfinies
 const QUESTIONS_LIST = [
-    { option1: "Coffee", option2: "Tea" },
-    { option1: "Morning", option2: "Evening" },
-    { option1: "Summer", option2: "Winter" },
-    { option1: "Beach", option2: "Mountains" },
-    { option1: "Pizza", option2: "Burger" },
-    { option1: "Netflix", option2: "YouTube" },
-    { option1: "iPhone", option2: "Android" },
-    { option1: "Cats", option2: "Dogs" },
-    { option1: "Books", option2: "Movies" },
-    { option1: "Sweet", option2: "Salty" },
-    { option1: "Early Bird", option2: "Night Owl" },
-    { option1: "City", option2: "Countryside" },
-    { option1: "Chocolate", option2: "Vanilla" },
-    { option1: "Rain", option2: "Sunshine" },
-    { option1: "Facebook", option2: "Instagram" }
+    { option1: "Dogs", option2: "Cats", template: "Are you more of a {1} or {2} person?" },
+    { option1: "Coffee", option2: "Tea", template: "Do you prefer {1} or {2}?" },
+    { option1: "Doing sport", option2: "Watch TV", template: "Do you prefer {1} or {2}?" },
+    { option1: "Orange", option2: "Green", template: "Do you prefer {1} or {2}?" },
+    { option1: "Sea", option2: "Countryside", template: "Where dou you prefre living {1} or {2}?" },
+    { option1: "Facebook", option2: "Instagram", template: "Are you more {1} or {2}?" },
+    { option1: "Sweet", option2: "Salty", template: "Are you more of a {1} or {2} person?" },
+    { option1: "social and expressive", option2: "organized and thoughtful", template: "Are you more {1} or {2}?" },
 ];
 
+function generateQuestion(questionData) {
+    const { option1, option2, template } = questionData;
+    
+    if (template) {
+        // Utiliser le template personnalisé
+        return template.replace('{1}', option1).replace('{2}', option2);
+    } else {
+        // Format par défaut
+        return `Do you prefer ${option1} or ${option2}?`;
+    }
+}
 // Variables globales
 let currentQuestionIndex = 0;
 let currentQuestion = '';
@@ -79,21 +83,55 @@ let isSaving = false;
 function calculateCurrentQuestion() {
     const now = new Date();
     
-    // CALCULER LE JOUR depuis une date de référence
-    const startDate = new Date('2025-08-11'); // Date de démarrage du questionnaire
-    const daysDifference = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+    // VÉRIFIER SI C'EST UN JOUR DE SEMAINE (1=Lundi, 5=Vendredi)
+    const dayOfWeek = now.getDay(); // 0=Dimanche, 1=Lundi, ..., 6=Samedi
     
-    // Index basé sur le jour
-    const questionIndex = daysDifference % QUESTIONS_LIST.length;
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+        // Weekend (Dimanche=0, Samedi=6)
+        console.log('📅 WEEKEND DÉTECTÉ - App inactive');
+        
+        const nextMonday = new Date(now);
+        nextMonday.setDate(now.getDate() + (1 + 7 - dayOfWeek) % 7);
+        nextMonday.setHours(0, 0, 0, 0);
+        
+        return {
+            questionIndex: 0,
+            isActive: false,
+            timeRemaining: 0,
+            message: `🏖️ WEEKEND - App inactive\n\n📅 Retour lundi ${nextMonday.toLocaleDateString('fr-FR')}\n⏰ Profitez de votre weekend !`
+        };
+    }
+    
+    // CALCULER LE JOUR depuis le LUNDI 11 AOÛT 2025 (SEULEMENT jours de semaine)
+    const startDate = new Date('2025-08-11'); // Lundi 11 août 2025 - DÉBUT DU QUESTIONNAIRE
+    
+    // Calculer le nombre de jours ouvrables depuis le début
+    let workDays = 0;
+    const currentDate = new Date(startDate);
+    
+    while (currentDate <= now) {
+        const currentDayOfWeek = currentDate.getDay();
+        if (currentDayOfWeek >= 1 && currentDayOfWeek <= 5) { // Lundi à Vendredi
+            workDays++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    // Index basé sur les jours ouvrables
+    const questionIndex = (workDays - 1) % QUESTIONS_LIST.length;
     
     // Temps restant dans cette journée
     const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
     const timeRemaining = Math.floor((endOfDay - now) / 1000);
     
-    console.log('📅 CALCUL QUOTIDIEN:', {
+    const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    
+    console.log('📅 CALCUL JOURS OUVRABLES depuis 11 août 2025:', {
+        'Date de début': '11 août 2025 (Lundi)',
         'Date actuelle': now.toLocaleDateString(),
-        'Jours depuis début': daysDifference,
+        'Jour': dayNames[dayOfWeek],
+        'Jours ouvrables depuis début': workDays,
         'Questions totales': QUESTIONS_LIST.length,
         'Question index': questionIndex,
         'Question numéro': questionIndex + 1,
@@ -104,7 +142,7 @@ function calculateCurrentQuestion() {
         questionIndex: questionIndex,
         isActive: true,
         timeRemaining: Math.max(1, timeRemaining),
-        message: `Question ${questionIndex + 1}/${QUESTIONS_LIST.length} (Jour ${daysDifference + 1})`
+        message: `Question ${questionIndex + 1}/${QUESTIONS_LIST.length} (Jour ouvrable ${workDays} depuis le 11 août)`
     };
 }
 
@@ -419,7 +457,7 @@ function syncWithRealTime() {
     const questionData = QUESTIONS_LIST[currentQuestionIndex];
     option1 = questionData.option1;
     option2 = questionData.option2;
-    currentQuestion = `Do you prefer ${option1} or ${option2}?`;
+    currentQuestion = generateQuestion(questionData);
     
     // Charger les votes existants pour cette question
     const todayData = loadTodayData();
@@ -923,60 +961,82 @@ function showAddQuestionModal() {
 let addingQuestion = false; // Variable globale
 
 function addNewQuestion() {
-    console.log('➕ Adding question - pausing auto sync');
+    console.log('🎯 Adding new question with template support...');
     
-    // PAUSE l'auto-sync
-    addingQuestion = true;
-    
-    const option1Input = prompt("Option 1:");
-    if (!option1Input?.trim()) {
-        addingQuestion = false;
+    const option1 = prompt("🎯 Option 1:");
+    if (!option1 || option1.trim() === '') {
+        console.log('❌ No option1 provided');
         return;
     }
     
-    const option2Input = prompt("Option 2:");
-    if (!option2Input?.trim()) {
-        addingQuestion = false;
+    const option2 = prompt("🎯 Option 2:");
+    if (!option2 || option2.trim() === '') {
+        console.log('❌ No option2 provided');
         return;
     }
     
-    // Sauvegarder l'état actuel
-    const savedIndex = currentQuestionIndex;
-    const savedVotes = { option1Count, option2Count, totalResponses };
-    const savedQuestion = { currentQuestion, option1, option2 };
-    
-    // Ajouter la question
-    QUESTIONS_LIST.push({ 
-        option1: option1Input.trim(), 
-        option2: option2Input.trim() 
-    });
-    
-    // Restaurer l'état exact
-    currentQuestionIndex = savedIndex;
-    currentQuestion = savedQuestion.currentQuestion;
-    option1 = savedQuestion.option1;
-    option2 = savedQuestion.option2;
-    option1Count = savedVotes.option1Count;
-    option2Count = savedVotes.option2Count;
-    totalResponses = savedVotes.totalResponses;
-    
-    // Reprendre l'auto-sync après 2 secondes
-    setTimeout(() => {
-        addingQuestion = false;
-        console.log('✅ Auto-sync resumed');
-    }, 2000);
-    
-    updateDisplay();
-    updateProgress();
-    
-    showNotification(`✅ Question ajoutée !
+    // NOUVEAU : Demander le format personnalisé
+    const customTemplate = prompt(`🎯 Format de question (optionnel):
 
-"${option1Input.trim()}" vs "${option2Input.trim()}"
+Exemples :
+• "Do you prefer {1} or {2}?" (défaut)
+• "Are you more {1} or {2}?"
+• "Would you rather be {1} or {2}?"
+• "Are you team {1} or team {2}?"
 
-📊 Total: ${QUESTIONS_LIST.length} questions
-📍 Vous restez sur Question ${savedIndex + 1}
+Laissez vide pour le format par défaut.
+Utilisez {1} et {2} pour les options.`);
+    
+    console.log('💾 Saving question with template:', option1, 'vs', option2, 'template:', customTemplate);
+    
+    try {
+        // Récupérer les questions existantes
+        let savedQuestions = localStorage.getItem('my_custom_questions');
+        let questionsList = savedQuestions ? JSON.parse(savedQuestions) : [];
+        
+        console.log('📥 Existing questions:', questionsList.length);
+        
+        // Créer la nouvelle question
+        const newQuestion = {
+            option1: option1.trim(),
+            option2: option2.trim(),
+            dateAdded: new Date().toISOString()
+        };
+        
+        // Ajouter le template si fourni
+        if (customTemplate && customTemplate.trim()) {
+            newQuestion.template = customTemplate.trim();
+            console.log('✅ Template added:', customTemplate.trim());
+        }
+        
+        questionsList.push(newQuestion);
+        
+        // Sauvegarder
+        localStorage.setItem('my_custom_questions', JSON.stringify(questionsList));
+        
+        // Ajouter à la liste active
+        QUESTIONS_LIST.push(newQuestion);
+        
+        console.log('✅ Question saved! Total questions:', QUESTIONS_LIST.length);
+        console.log('💾 LocalStorage content:', localStorage.getItem('my_custom_questions'));
+        
+        // Prévisualiser la question générée
+        const preview = generateQuestion(newQuestion);
+        
+        alert(`✅ QUESTION AJOUTÉE !
 
-Auto-sync reprend dans 2s...`, 'success');
+Aperçu: ${preview}
+
+Options: "${option1}" vs "${option2}"
+${customTemplate ? `Template: "${customTemplate}"` : 'Format: Par défaut'}
+
+Total questions: ${QUESTIONS_LIST.length}
+Sauvée dans localStorage !`);
+        
+    } catch (error) {
+        console.error('❌ Error saving question:', error);
+        alert('❌ Erreur: ' + error.message);
+    }
 }
 
 
@@ -1174,7 +1234,7 @@ function goToNextQuestion() {
     const q = QUESTIONS_LIST[currentQuestionIndex];
     option1 = q.option1;
     option2 = q.option2;
-    currentQuestion = `Do you prefer ${option1} or ${option2}?`;
+    currentQuestion = generateQuestion(q);
     
     // Reset votes pour cette question
     option1Count = 0;
@@ -1315,63 +1375,6 @@ function reloadAllQuestions() {
     
     // Recharger les questions personnalisées
     loadCustomQuestions();
-}
-
-// Modifier la fonction addNewQuestion existante
-// Version simple garantie
-function addNewQuestion() {
-    console.log('🎯 Adding new question...');
-    
-    const option1 = prompt("🎯 Option 1:");
-    if (!option1 || option1.trim() === '') {
-        console.log('❌ No option1 provided');
-        return;
-    }
-    
-    const option2 = prompt("🎯 Option 2:");
-    if (!option2 || option2.trim() === '') {
-        console.log('❌ No option2 provided');
-        return;
-    }
-    
-    console.log('💾 Saving question:', option1, 'vs', option2);
-    
-    try {
-        // Récupérer les questions existantes
-        let savedQuestions = localStorage.getItem('my_custom_questions');
-        let questionsList = savedQuestions ? JSON.parse(savedQuestions) : [];
-        
-        console.log('📥 Existing questions:', questionsList.length);
-        
-        // Ajouter la nouvelle question
-        const newQuestion = {
-            option1: option1.trim(),
-            option2: option2.trim(),
-            dateAdded: new Date().toISOString()
-        };
-        
-        questionsList.push(newQuestion);
-        
-        // Sauvegarder
-        localStorage.setItem('my_custom_questions', JSON.stringify(questionsList));
-        
-        // Ajouter à la liste active
-        QUESTIONS_LIST.push(newQuestion);
-        
-        console.log('✅ Question saved! Total questions:', QUESTIONS_LIST.length);
-        console.log('💾 LocalStorage content:', localStorage.getItem('my_custom_questions'));
-        
-        alert(`✅ QUESTION AJOUTÉE !
-
-"${option1}" vs "${option2}"
-
-Total questions: ${QUESTIONS_LIST.length}
-Sauvée dans localStorage !`);
-        
-    } catch (error) {
-        console.error('❌ Error saving question:', error);
-        alert('❌ Erreur: ' + error.message);
-    }
 }
 
 // Charger les questions au démarrage
@@ -1652,7 +1655,7 @@ document.addEventListener('DOMContentLoaded', function() {
     syncWithRealTime();
     
     // Re-synchroniser toutes les minutes
-    setInterval(syncWithRealTime, 60000);
+    setInterval(syncWithRealTime, 300000);
     
     console.log('✅ App will persist even when iPad is closed!');
 });
@@ -1693,6 +1696,37 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+/*
+// Fonction pour forcer le mode weekend (pour tests)
+function forceWeekendMode() {
+    console.log('🏖️ FORCING WEEKEND MODE for testing');
+    
+    // Simuler un samedi
+    const originalGetDay = Date.prototype.getDay;
+    Date.prototype.getDay = function() {
+        return 6; // Samedi
+    };
+    
+    syncWithRealTime();
+    
+    showNotification(`🏖️ MODE WEEKEND FORCÉ !
+
+L'app est maintenant inactive comme si c'était samedi.
+
+📅 Début du questionnaire : Lundi 11 août 2025
+
+Pour revenir au mode normal :
+- Rechargez la page
+- Ou appelez normalMode()`, 'warning');
+}
+
+// Fonction pour revenir au mode normal
+function normalMode() {
+    console.log('📅 BACK TO NORMAL MODE');
+    location.reload(); // Simple rechargement
+}
+*/
+
 // Exposer les fonctions globalement
 window.submitAnswer = submitAnswer;
 window.fillCurrentForm = fillCurrentForm;
@@ -1716,6 +1750,8 @@ window.quickTest = quickTest;
 window.normalTest = normalTest;
 window.realMode = realMode;
 window.syncWithRealTime = syncWithRealTime;
+//window.forceWeekendMode = forceWeekendMode;
+//window.normalMode = normalMode;
 
 console.log('🚀 Complete questionnaire with REAL-TIME PERSISTENCE loaded!');
 console.log('🛡️ localStorage intercepted - unauthorized saves blocked');
@@ -1725,6 +1761,3 @@ console.log('🔧 Admin controls available');
 console.log('➕ Dynamic question adding enabled');
 console.log('📊 Multi-day data persistence');
 console.log('✅ Ready to use - Test with 1 minute intervals!');
-
-
-
