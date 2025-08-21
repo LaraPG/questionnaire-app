@@ -102,8 +102,8 @@ function calculateCurrentQuestion() {
         };
     }
     
-    // CALCULER LE JOUR depuis le LUNDI 11 AOÛT 2025 (SEULEMENT jours de semaine)
-    const startDate = new Date('2025-08-11'); // Lundi 11 août 2025 - DÉBUT DU QUESTIONNAIRE
+    // CALCULER LE JOUR depuis le Mercredi 20 AOÛT 2025 (SEULEMENT jours de semaine)
+    const startDate = new Date('2025-08-20'); // Mercredi 20 août 2025 - DÉBUT DU QUESTIONNAIRE
     
     // Calculer le nombre de jours ouvrables depuis le début
     let workDays = 0;
@@ -1761,4 +1761,5 @@ console.log('🔧 Admin controls available');
 console.log('➕ Dynamic question adding enabled');
 console.log('📊 Multi-day data persistence');
 console.log('✅ Ready to use - Test with 1 minute intervals!');
+
 
