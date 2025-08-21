@@ -44,12 +44,15 @@ let DAILY_END_HOUR = 24;
 const QUESTIONS_LIST = [
     { option1: "Dogs", option2: "Cats", template: "Are you more of a {1} or {2} person?" },
     { option1: "Coffee", option2: "Tea", template: "Do you prefer {1} or {2}?" },
-    { option1: "Doing sport", option2: "Watch TV", template: "Do you prefer {1} or {2}?" },
+    { option1: "Sport", option2: "No sport", template: "Do you usually do {1} or {2}?" },
     { option1: "Orange", option2: "Green", template: "Do you prefer {1} or {2}?" },
     { option1: "Sea", option2: "Countryside", template: "Where do you prefer to live {1} or {2}?" },
+    { option1: "social and expressive", option2: "organized and thoughtful", template: "Are you more {1} or {2}?" },
+    { option1: "big responsabilities", option2: "small responsabilities", template: "Do you feel like you have {1} or {2}?" },
+    { option1: "Alcohol", option2: "No alcohol", template: "When you go out with your friends or family, are you drinking {1} or {2}?" },
     { option1: "Facebook", option2: "Instagram", template: "Are you more {1} or {2}?" },
     { option1: "Sweet", option2: "Salty", template: "Are you more of a {1} or {2} person?" },
-    { option1: "social and expressive", option2: "organized and thoughtful", template: "Are you more {1} or {2}?" },
+    
 ];
 
 function generateQuestion(questionData) {
@@ -88,7 +91,7 @@ function calculateCurrentQuestion() {
     
     if (dayOfWeek === 0 || dayOfWeek === 6) {
         // Weekend (Dimanche=0, Samedi=6)
-        console.log('📅 WEEKEND DÉTECTÉ - App inactive');
+        console.log('📅 WEEKEND DETECTED - App inactive');
         
         const nextMonday = new Date(now);
         nextMonday.setDate(now.getDate() + (1 + 7 - dayOfWeek) % 7);
@@ -98,7 +101,7 @@ function calculateCurrentQuestion() {
             questionIndex: 0,
             isActive: false,
             timeRemaining: 0,
-            message: `🏖️ WEEKEND - App inactive\n\n📅 Retour lundi ${nextMonday.toLocaleDateString('fr-FR')}\n⏰ Profitez de votre weekend !`
+            message: `🏖️ WEEKEND - App inactive\n\n📅 Back on monday ${nextMonday.toLocaleDateString('fr-FR')}\n⏰ Profitez de votre weekend !`
         };
     }
     
@@ -127,8 +130,8 @@ function calculateCurrentQuestion() {
     
     const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     
-    console.log('📅 CALCUL JOURS OUVRABLES depuis 11 août 2025:', {
-        'Date de début': '11 août 2025 (Lundi)',
+    console.log('📅 CALCUL JOURS OUVRABLES depuis 20 août 2025:', {
+        'Date de début': '20 août 2025 (Mercredi)',
         'Date actuelle': now.toLocaleDateString(),
         'Jour': dayNames[dayOfWeek],
         'Jours ouvrables depuis début': workDays,
@@ -142,7 +145,7 @@ function calculateCurrentQuestion() {
         questionIndex: questionIndex,
         isActive: true,
         timeRemaining: Math.max(1, timeRemaining),
-        message: `Question ${questionIndex + 1}/${QUESTIONS_LIST.length} (Jour ouvrable ${workDays} depuis le 11 août)`
+        message: `Question ${questionIndex + 1}/${QUESTIONS_LIST.length} (Jour ouvrable ${workDays} depuis le 20 août)`
     };
 }
 
@@ -1761,5 +1764,3 @@ console.log('🔧 Admin controls available');
 console.log('➕ Dynamic question adding enabled');
 console.log('📊 Multi-day data persistence');
 console.log('✅ Ready to use - Test with 1 minute intervals!');
-
-
