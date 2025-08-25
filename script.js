@@ -1658,7 +1658,7 @@ document.addEventListener('DOMContentLoaded', function() {
     syncWithRealTime();
     
     // Re-synchroniser toutes les minutes
-    setInterval(syncWithRealTime, 300000);
+    //setInterval(syncWithRealTime, 300000);
     
     console.log('✅ App will persist even when iPad is closed!');
 });
@@ -1764,3 +1764,4 @@ console.log('🔧 Admin controls available');
 console.log('➕ Dynamic question adding enabled');
 console.log('📊 Multi-day data persistence');
 console.log('✅ Ready to use - Test with 1 minute intervals!');
+
